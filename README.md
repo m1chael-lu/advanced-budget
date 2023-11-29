@@ -1,12 +1,12 @@
 # advanced-budget
-Accounting-based Approach to Managing Personal Budgets
+## Accounting-based Approach to Managing Personal Budgets ##
 
 Inspired by the matching principle in financial accounting, this budget application
 aims to match all expenses to corresponding utility. Period expenses are amortized/
 depreciated over the lifetime of the expense. The goal is to create a more accurate
 representation of personal expenses over time. 
 
-**[In Progress]**
+## ⛏️ In Progress ⛏️ ##
 
 Current Features: 
 - C++ Boost-based HTTP backend server
