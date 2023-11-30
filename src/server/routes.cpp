@@ -142,7 +142,61 @@ void deleteExpense(const Request& req, Response& res, ParsedRoute parsed, std::s
         std::cout << " (MySQL error code: " << e.getErrorCode();
         std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
     }
-} 
+}
+
+void aggregateExpenses(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn)
+{
+    res.set(http::field::content_type, "application/json");
+    nlohmann::json result;
+    try {
+        std::unique_ptr<sql::Statement> stmt(conn->createStatement());
+        stmt->execute("USE budgetDatabase");
+        
+        std::string startDate = "2023-11-15";
+        std::string endDate = "2023-12-15";
+        // Construct the SQL query with recursive CTE
+        std::string query = R"(
+            WITH RECURSIVE DateSeries AS (
+                SELECT CAST(')" + startDate + R"(' AS DATE) AS Date
+                UNION ALL
+                SELECT Date + INTERVAL 1 DAY FROM DateSeries
+                WHERE Date < CAST(')" + endDate + R"(' AS DATE)
+            )
+            SELECT
+                DateSeries.Date,
+                SUM(
+                    CASE 
+                        WHEN DATE(Expenses.EndPeriod) > DATE(Expenses.StartPeriod) THEN 
+                            Expenses.Value / (DATEDIFF(DATE(Expenses.EndPeriod), DATE(Expenses.StartPeriod)) + 1)
+                        ELSE Expenses.Value 
+                    END
+                ) AS DailyValue
+            FROM
+                DateSeries
+            LEFT JOIN
+                Expenses ON DateSeries.Date BETWEEN DATE(Expenses.StartPeriod) AND DATE(Expenses.EndPeriod) AND Expenses.UserID = 2
+            GROUP BY
+                DateSeries.Date
+        )";
+        std::unique_ptr<sql::ResultSet> res(stmt->executeQuery(query));
+        
+        nlohmann::json data = nlohmann::json::array();
+        while (res->next()) {
+            std::string date = res->getString("Date");
+            double dailyValue = res->getDouble("DailyValue");
+            data.push_back({{"day", date}, {"aggregate_value", dailyValue}});
+        }
+        result["data"] = data;
+    } catch(sql::SQLException &e) {
+        std::cout << "# ERR: SQLException in " << __FILE__;
+        std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
+        std::cout << "# ERR: " << e.what();
+        std::cout << " (MySQL error code: " << e.getErrorCode();
+        std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        result["error"] = "Database error";
+    }
+    res.body() = result.dump();
+}
 
 void setupRoutes(Router& router) 
 {
@@ -153,4 +207,5 @@ void setupRoutes(Router& router)
     router.addRoute(http::verb::post, "/adduser", handleAddUser);
     router.addRoute(http::verb::post, "/addexpense", handleAddExpense);
     router.addRoute(http::verb::delete_, "/deleteexpense", deleteExpense);
+    router.addRoute(http::verb::get, "/aggregateexpenses", aggregateExpenses);
 }
