@@ -5,6 +5,7 @@
 #include <jdbc/cppconn/exception.h>
 #include <jdbc/cppconn/resultset.h>
 #include <jdbc/cppconn/statement.h>
+
 #include <memory>
 #include <queue>
 #include <mutex>

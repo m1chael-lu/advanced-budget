@@ -19,6 +19,8 @@ void handleAPITest(const Request& req, Response& res, ParsedRoute parsed, std::s
 
 void handleAPIPost(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn);
 
-void handleInsertUser(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn);
+void handleAddUser(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn);
+
+void handleAddExpense(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn);
 
 void setupRoutes(Router& router);
