@@ -8,13 +8,14 @@
 #include <string>
 #include <iostream>
 #include "../log.hpp"
+#include "../database/connection_pool.hpp"
 
 namespace net = boost::asio;            
 using tcp = net::ip::tcp;      
 
 class Server {
 public:
-    Server(net::io_context& ioc, unsigned short port, Router router);
+    Server(net::io_context& ioc, unsigned short port, Router& router);
 
     void run();
     void do_accept();

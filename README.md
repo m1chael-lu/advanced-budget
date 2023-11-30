@@ -16,6 +16,8 @@ representation of personal expenses over time.
 
 ## Dependencies: ##
 - Boost 
+- MySQL Connector/C++
+- nlohmann/json
 
 ## Current Feature Plans: ##
 - Routing Several API's:

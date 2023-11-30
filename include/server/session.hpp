@@ -9,6 +9,7 @@
 #include <vector>
 #include "../log.hpp"
 #include "router.hpp"
+#include "../database/connection_pool.hpp"
 
 
 namespace beast = boost::beast;         

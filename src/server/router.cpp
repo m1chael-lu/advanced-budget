@@ -6,6 +6,7 @@
 std::unordered_map<std::string, std::string> parseQueryParameters(const std::string& url) {
     std::unordered_map<std::string, std::string> queryParams;
     
+    // Query Parameters
     auto queryStart = url.find('?');
     if (queryStart != std::string::npos) {
         std::string queryString = url.substr(queryStart + 1);
@@ -24,7 +25,21 @@ std::unordered_map<std::string, std::string> parseQueryParameters(const std::str
     return queryParams;
 }
 
-ParsedRoute parseRawRoute(std::string path)
+nlohmann::json parseBodyParameters(Request& req)
+{
+    nlohmann::json bodyParams; 
+    if (req[http::field::content_type] == "application/json") {
+        try {
+            bodyParams = nlohmann::json::parse(req.body());
+        } catch (const nlohmann::json::parse_error& e) {
+            std::cout << "JSON parse error: " << e.what() << std::endl;
+        }
+    }
+    return bodyParams;
+}
+
+
+ParsedRoute extractRequestParameters(std::string path, Request& req)
 {
     ParsedRoute out;
     std::string base_path = path;
@@ -35,6 +50,7 @@ ParsedRoute parseRawRoute(std::string path)
 
     out.base_path = base_path;
     out.query_parameters = parseQueryParameters(path);
+    out.body_parameters = parseBodyParameters(req);
     std::cout << "path: " << path << std::endl;
     return out;
 }
@@ -52,11 +68,12 @@ bool Router::handleRequest(const Request& req, Response& res)
         const auto& methodRoutes = routes_.find(req.method());
         if (methodRoutes != routes_.end()) {
             std::string path(req.target().begin(), req.target().end());
-            ParsedRoute parsed = parseRawRoute(path);
-            
+            ParsedRoute parsed = extractRequestParameters(path, const_cast<Request&>(req));
             const auto& handler = methodRoutes->second.find(parsed.base_path);
             if (handler != methodRoutes->second.end()) {
-                handler->second.handler(req, res, parsed);
+                std::shared_ptr<sql::Connection> conn = connPool_.getConnection();
+                handler->second.handler(req, res, parsed, conn);
+                connPool_.returnConnection(conn);
                 return true;
             }
         }

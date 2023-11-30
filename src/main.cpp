@@ -7,6 +7,7 @@
 #include <csignal>
 #include "../include/server/router.hpp"
 #include "../include/server/routes.hpp"
+#include "../include/database/connection_pool.hpp"
 
 namespace beast = boost::beast;         
 namespace http = beast::http;           
@@ -30,9 +31,9 @@ int main() {
         net::io_context ioc;
         net::io_context::work idleWork(ioc);
         unsigned short port = 8080;
-        Router router;
+        MySqlConnectionPool connection_pool(10);
+        Router router(connection_pool);
         setupRoutes(router);
-
         Server server{ioc, port, router};
 
         // Setup signal handler for graceful shutdown

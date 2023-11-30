@@ -13,10 +13,8 @@ namespace net = boost::asio;
 using tcp = net::ip::tcp;     
 
 // Implement the Server constructor
-Server::Server(net::io_context& ioc, unsigned short port, Router router)
-    : ioc_(ioc), acceptor_(ioc, {tcp::v4(), port}) {
-    router_ = router;
-}
+Server::Server(net::io_context& ioc, unsigned short port, Router& router)
+    : ioc_(ioc), acceptor_(ioc, {tcp::v4(), port}), router_(router) {}
 
 // Implement the run method
 void Server::run() {

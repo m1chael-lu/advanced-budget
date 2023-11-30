@@ -73,6 +73,11 @@
         "type_traits": "cpp",
         "algorithm": "cpp",
         "thread": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "any": "cpp",
+        "codecvt": "cpp",
+        "csignal": "cpp",
+        "coroutine": "cpp",
+        "future": "cpp"
     }
 }

@@ -61,3 +61,11 @@ build/MyServer
 main.dSYM/Contents/Resources/Relocations/aarch64/main.yml
 main.dSYM/Contents/Info.plist
 main.dSYM/Contents/Resources/DWARF/main
+*.make
+*.cmake
+*.internal
+*.ts
+build/CMakeFiles/DatabaseSetup.dir/link.txt
+*.plist
+*.yml
+src/database/setup.dSYM/Contents/Resources/DWARF/setup
