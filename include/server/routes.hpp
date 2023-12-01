@@ -25,4 +25,6 @@ void handleAddExpense(const Request& req, Response& res, ParsedRoute parsed, std
 
 void aggregateExpenses(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn);
 
+void retrieveUserExpenses(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn);
+
 void setupRoutes(Router& router);

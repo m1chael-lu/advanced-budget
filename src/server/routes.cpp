@@ -124,6 +124,9 @@ void handleAddExpense(const Request& req, Response& res, ParsedRoute parsed, std
 
     nlohmann::json out;
     out["id"] = id_to_return;
+    res.set(boost::beast::http::field::access_control_allow_origin, "*");
+    res.set(boost::beast::http::field::access_control_allow_methods, "GET, POST, OPTIONS");
+    res.set(boost::beast::http::field::access_control_allow_headers, "Content-Type, Authorization");
     res.body() = out.dump();
 }
 
@@ -195,6 +198,44 @@ void aggregateExpenses(const Request& req, Response& res, ParsedRoute parsed, st
         std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
         result["error"] = "Database error";
     }
+    res.set(boost::beast::http::field::access_control_allow_origin, "*");
+    res.set(boost::beast::http::field::access_control_allow_methods, "GET, POST, OPTIONS");
+    res.set(boost::beast::http::field::access_control_allow_headers, "Content-Type, Authorization");
+    res.body() = result.dump();
+}
+
+void retrieveUserExpenses(const Request& req, Response& res, ParsedRoute parsed, std::shared_ptr<sql::Connection> conn)
+{
+    res.set(http::field::content_type, "application/json");
+    nlohmann::json result;
+    try {
+        std::unique_ptr<sql::Statement> stmt(conn->createStatement());
+        stmt->execute("USE budgetDatabase");
+        std::unique_ptr<sql::ResultSet> results(stmt->executeQuery("SELECT * FROM Expenses WHERE UserID = " + parsed.query_parameters.at("id")));
+        
+        nlohmann::json data = nlohmann::json::array();
+        while (results->next()) {
+            int id = results->getInt("ExpenseID");
+            int user_id = results->getInt("UserID");
+            std::string name = results->getString("Name");
+            std::string description = results->getString("Description");
+            std::string startPeriod = results->getString("StartPeriod");
+            std::string endPeriod = results->getString("EndPeriod");
+            double value = results->getDouble("Value");
+            data.push_back({{"id", id}, {"user_id", user_id}, {"name", name}, {"description", description}, {"start_period", startPeriod}, {"end_period", endPeriod}, {"value", value}});
+        }
+        result["data"] = data;
+    } catch(sql::SQLException &e) {
+        std::cout << "# ERR: SQLException in " << __FILE__;
+        std::cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << std::endl;
+        std::cout << "# ERR: " << e.what();
+        std::cout << " (MySQL error code: " << e.getErrorCode();
+        std::cout << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        result["error"] = "Database error";
+    }
+    res.set(boost::beast::http::field::access_control_allow_origin, "*");
+    res.set(boost::beast::http::field::access_control_allow_methods, "GET, POST, OPTIONS");
+    res.set(boost::beast::http::field::access_control_allow_headers, "Content-Type, Authorization");
     res.body() = result.dump();
 }
 
@@ -208,4 +249,5 @@ void setupRoutes(Router& router)
     router.addRoute(http::verb::post, "/addexpense", handleAddExpense);
     router.addRoute(http::verb::delete_, "/deleteexpense", deleteExpense);
     router.addRoute(http::verb::get, "/aggregateexpenses", aggregateExpenses);
+    router.addRoute(http::verb::get, "/retrieveuserexpenses", retrieveUserExpenses);
 }

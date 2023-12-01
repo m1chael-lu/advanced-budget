@@ -65,16 +65,31 @@ void Router::addRoute(http::verb method, const std::string& path, HandlerFunctio
 
 bool Router::handleRequest(const Request& req, Response& res)
 {
-        const auto& methodRoutes = routes_.find(req.method());
-        if (methodRoutes != routes_.end()) {
-            std::string path(req.target().begin(), req.target().end());
-            ParsedRoute parsed = extractRequestParameters(path, const_cast<Request&>(req));
-            const auto& handler = methodRoutes->second.find(parsed.base_path);
-            if (handler != methodRoutes->second.end()) {
-                std::shared_ptr<sql::Connection> conn = connPool_.getConnection();
-                handler->second.handler(req, res, parsed, conn);
-                connPool_.returnConnection(conn);
-                return true;
+        if (req.method() == boost::beast::http::verb::options) {
+            // Create an appropriate response for OPTIONS
+            // auto options_response = boost::beast::http::response<boost::beast::http::string_body>{};
+
+            // Set CORS headers
+            res.set(boost::beast::http::field::access_control_allow_origin, "*");
+            res.set(boost::beast::http::field::access_control_allow_methods, "GET, POST, OPTIONS");
+            res.set(boost::beast::http::field::access_control_allow_headers, "Content-Type, Authorization");
+
+            // Set other response properties as needed and send the response
+            // Ensure to send a 200 OK status
+            res.result(boost::beast::http::status::ok);
+            return true;
+        } else {
+            const auto& methodRoutes = routes_.find(req.method());
+            if (methodRoutes != routes_.end()) {
+                std::string path(req.target().begin(), req.target().end());
+                ParsedRoute parsed = extractRequestParameters(path, const_cast<Request&>(req));
+                const auto& handler = methodRoutes->second.find(parsed.base_path);
+                if (handler != methodRoutes->second.end()) {
+                    std::shared_ptr<sql::Connection> conn = connPool_.getConnection();
+                    handler->second.handler(req, res, parsed, conn);
+                    connPool_.returnConnection(conn);
+                    return true;
+                }
             }
         }
         return false;
