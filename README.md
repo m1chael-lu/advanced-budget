@@ -7,6 +7,8 @@ representation of personal expenses over time.
 
 # ⛏️ In Progress ⛏️ #
 
+<img width="1403" alt="image" src="https://github.com/m1chael-lu/advanced-budget/assets/96500006/4f9949fb-1b62-4a54-a8c2-1bb273aeb415">
+
 ## Current Features: ##
 - C++ Boost-based HTTP backend server
     - Asynchronous Thread-based implementation
@@ -14,6 +16,13 @@ representation of personal expenses over time.
     - Support for query and body parameters
     - MySQL integration
     - Registering a user
+    - Adding an expense
+    - Aggregating expenses
+    - Delete expenses
+ - React
+    - React client with utility-based chart view with (recharts)
+    - Modal to add new expenses
+    - Table view of expenses with filtering / sorting
 
 
 ## Dependencies: ##
@@ -30,19 +39,11 @@ representation of personal expenses over time.
 5. Run `cmake ..` in the `/build` directory
 6. Run `cmake --build .` in the `/build` directory
 7. Navigate to `src/database/` and run `./setup`
-8. In `/build`, run `./MyServer` to start the server 
+8. Navigate to `client/application` and run `npm install --force`
+9. In `/build`, run `./MyServer` to start the server
+10. Use `mysql.server start` to start the local mysql server
+11. Navigate to `client/application` and run `npm start` to start the React client
 
-## Current Feature Plans: ##
-- Routing Several API's:
-    - Add User
-    - Authenticate User
-    - Add Expense 
-    - Modify Expense
-    - Delete Expense
-    - Aggregate Report 
-- React-based Frontend:
-    - Allowing user login/registration
-    - UI-based expense creationg
 
 ## Contributors: ##
 - Michael Lu
